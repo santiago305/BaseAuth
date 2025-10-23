@@ -24,8 +24,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       /**
-       * Extrae el JWT de las cookies de la solicitud.
-       * Utiliza `req.cookies.access_token` como fuente del token.
+       * Extrae el JWT de las cookies o del header Authorization de la solicitud.
+       * Utiliza `req.cookies.access_token` como fuente principal del token y
+       * acepta también el formato `Bearer <token>` cuando viene por cabecera.
        * 
        * @function
        * @param {Request} req La solicitud Express que contiene las cookies.
@@ -33,6 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
        */
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => req?.cookies?.access_token, // 👈 lee desde cookie
+        ExtractJwt.fromAuthHeaderAsBearerToken(), // Permite usar el header Authorization
       ]),
       ignoreExpiration: false, // No ignora la expiración del token.
       secretOrKey: envs.jwt.secret, // Clave secreta para verificar el JWT.
