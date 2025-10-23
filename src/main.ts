@@ -7,9 +7,16 @@ import { enableCookieParser } from './common/middleware/enable-cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import compression from 'compression';
+import { ensureUploadsRootExists, getUploadsRootPath } from './common/utils/file-upload.util';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  ensureUploadsRootExists();
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.useStaticAssets(getUploadsRootPath(), {
+    prefix: '/uploads/',
+  });
 
   app.setGlobalPrefix('api');
   
@@ -33,7 +40,7 @@ async function bootstrap() {
   });
 
   app.use(helmet());
-  app.use(compression()); 
+  app.use(compression());
   // Usar el interceptor global para logs
   app.useGlobalInterceptors(new LoggingInterceptor());
   // Habilitar el uso de cookies

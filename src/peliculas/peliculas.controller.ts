@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+  UseInterceptors,
+  UploadedFiles,
+} from '@nestjs/common';
 import { PeliculasService } from './peliculas.service';
 import { CreatePeliculaDto } from './dto/create-pelicula.dto';
 import { UpdatePeliculaDto } from './dto/update-pelicula.dto';
@@ -6,6 +17,8 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators';
 import { RoleType } from 'src/common/constants';
+import { peliculaMediaUploadInterceptor } from './peliculas.upload.config';
+import { PeliculaMediaFiles } from './interfaces/pelicula-media-files.interface';
 
 @Controller('peliculas')
 export class PeliculasController {
@@ -45,27 +58,29 @@ export class PeliculasController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN, RoleType.MODERATOR)
-  create(@Body() dto: CreatePeliculaDto) {
-    return this.peliculasService.create(dto);
+  @UseInterceptors(peliculaMediaUploadInterceptor)
+  create(@Body() dto: CreatePeliculaDto, @UploadedFiles() files: PeliculaMediaFiles) {
+    return this.peliculasService.create(dto, files);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN, RoleType.MODERATOR)
-  update(@Param('id') id: string, @Body() dto: UpdatePeliculaDto) {
-    return this.peliculasService.update(id, dto);
+  @UseInterceptors(peliculaMediaUploadInterceptor)
+  update(@Param('id') id: string, @Body() dto: UpdatePeliculaDto, @UploadedFiles() files: PeliculaMediaFiles) {
+    return this.peliculasService.update(id, dto, files);
   }
 
   @Patch('remove/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleType.ADMIN, RoleType.MODERATOR)
+  @Roles(RoleType.ADMIN)
   remove(@Param('id') id: string) {
     return this.peliculasService.remove(id);
   }
 
   @Patch('restore/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleType.ADMIN, RoleType.MODERATOR)
+  @Roles(RoleType.ADMIN)
   restore(@Param('id') id: string) {
     return this.peliculasService.restore(id);
   }

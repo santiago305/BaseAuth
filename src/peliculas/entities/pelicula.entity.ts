@@ -36,6 +36,12 @@ export class Pelicula {
   @Column({ nullable: true })
   trailer_url: string | null;
 
+  @Column({ type: 'jsonb', nullable: false, default: () => "'[]'::jsonb" })
+  imagenes: string[];
+
+  @Column({ type: 'jsonb', nullable: false, default: () => "'[]'::jsonb" })
+  videos: string[];
+
   @Column({ default: false })
   deleted: boolean;
 

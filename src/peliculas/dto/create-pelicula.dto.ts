@@ -1,4 +1,38 @@
-import { IsString, IsOptional, IsDateString, IsInt, Min, Max, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsDateString,
+  IsInt,
+  Min,
+  Max,
+  IsNumber,
+  IsArray,
+} from 'class-validator';
+import { Transform } from 'class-transformer';
+
+const transformToStringArray = ({ value }: { value: unknown }) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item));
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item));
+      }
+    } catch (error) {
+      // ignoramos el error y tratamos el valor como string simple
+    }
+    return [value];
+  }
+
+  return undefined;
+};
 
 export class CreatePeliculaDto {
   @IsString()
@@ -34,4 +68,16 @@ export class CreatePeliculaDto {
   @IsOptional()
   @IsString()
   trailer_url?: string;
+
+  @IsOptional()
+  @IsArray()
+  @Transform(transformToStringArray)
+  @IsString({ each: true })
+  imagenes?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @Transform(transformToStringArray)
+  @IsString({ each: true })
+  videos?: string[];
 }
