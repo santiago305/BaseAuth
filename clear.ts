@@ -3,6 +3,8 @@ import { envs } from './src/config/envs';
 import { Role } from './src/roles/entities/role.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Client } from 'src/clients/entities/client.entity';
+import { Pelicula } from 'src/peliculas/entities/pelicula.entity';
+
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -13,7 +15,7 @@ const dataSource = new DataSource({
   database: envs.db.name,
   synchronize: false,
   logging: false,
-  entities: [Role, User, Client],
+  entities: [Role, User, Client, Pelicula],
 });
 
 dataSource
@@ -21,7 +23,7 @@ dataSource
   .then(async () => {
     console.log('[Clear] Limpiando la base de datos...');
 
-    const entities = [Client, User, Role]; // Orden: primero las tablas hijas, luego las padres
+    const entities = [Client, Pelicula, User, Role]; // Orden: primero las tablas hijas, luego las padres
 
     for (const entity of entities) {
       const repo = dataSource.getRepository(entity);
