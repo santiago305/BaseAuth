@@ -9,6 +9,7 @@ import { ClientsModule } from './clients/clients.module';
 import { AppConfigModule } from './config/config.module';
 import { CommonModule } from './common/common.module';
 import { DatabaseModule } from './database/database.module';
+import { PeliculasModule } from './peliculas/peliculas.module';
 
 
 @Module({
@@ -19,10 +20,12 @@ import { DatabaseModule } from './database/database.module';
     AuthModule, 
     RolesModule, 
     UsersModule, 
-    ClientsModule
+    ClientsModule,
+    PeliculasModule
   ],
 })
 export class AppModule {
+
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply()

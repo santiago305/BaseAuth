@@ -4,9 +4,12 @@ import {
   Column,
   OneToOne,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
   CreateDateColumn,
 } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
+import { Pelicula } from 'src/peliculas/entities/pelicula.entity';
 
 /**
  * Entidad Client: Información específica del cliente.
@@ -55,4 +58,8 @@ export class Client {
    */
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @ManyToMany(() => Pelicula, (pelicula) => pelicula.clientes, { cascade: false })
+  @JoinTable({ name: 'clientes_peliculas' })
+  peliculas: Pelicula[];
 }
