@@ -35,4 +35,10 @@ export class CreateUserDto {
   @IsOptional()
   @IsNotEmpty()
   roleId?: string;
+
+  /**URL de la imagen del usuario (opcional) */
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
+
 }

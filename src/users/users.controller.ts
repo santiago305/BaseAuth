@@ -7,7 +7,12 @@ import {
   Patch,
   UseGuards,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -19,10 +24,6 @@ import { User as CurrentUser } from 'src/common/decorators/user.decorator';
 
 /**
  * Controlador para la gestión de usuarios.
- * Este controlador gestiona las operaciones CRUD (crear, leer, actualizar, eliminar)
- * para los usuarios, y está protegido con autenticación y roles.
- * 
- * @Controller('users') 
  */
 @Controller('users')
 export class UsersController {
@@ -31,10 +32,7 @@ export class UsersController {
   @Post('create')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN)
-  create(
-    @Body() dto: CreateUserDto,
-    @CurrentUser() user: { role: RoleType }
-  ) {
+  create(@Body() dto: CreateUserDto, @CurrentUser() user: { role: RoleType }) {
     return this.usersService.create(dto, user.role);
   }
 
@@ -48,7 +46,6 @@ export class UsersController {
     @Query('order') order: 'ASC' | 'DESC'
   ) {
     const pageNumber = parseInt(page) || 1;
-
     return this.usersService.findAll({
       page: pageNumber,
       filters: { role },
@@ -56,7 +53,7 @@ export class UsersController {
       order: order || 'DESC',
     });
   }
-  
+
   @Get('actives')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN, RoleType.MODERATOR)
@@ -67,7 +64,6 @@ export class UsersController {
     @Query('order') order: 'ASC' | 'DESC'
   ) {
     const pageNumber = parseInt(page) || 1;
-
     return this.usersService.findActives({
       page: pageNumber,
       filters: { role },
@@ -75,19 +71,20 @@ export class UsersController {
       order: order || 'DESC',
     });
   }
-  
-  @Get('me')
+
+ @Get('me')
   @UseGuards(JwtAuthGuard)
-  getProfile(@CurrentUser() user: { userId: string }) {
-    return this.usersService.findOwnUser(user.userId);
+  getProfile(@CurrentUser() user: { id: string }) {
+    return this.usersService.findOwnUser(user.id);
   }
-  
+
   @Get('search/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN, RoleType.MODERATOR)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
+
   @Get('email/:email')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN, RoleType.MODERATOR)
@@ -101,18 +98,45 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
-
   @Patch('delete/:id')
   @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
 
-
   @Patch('restore/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN)
   restore(@Param('id') id: string) {
     return this.usersService.restore(id);
+  }
+
+  @Patch('change-password/:id')
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Param('id') id: string,
+    @Body() body: { currentPassword: string; newPassword: string }
+  ) {
+    return this.usersService.changePassword(id, body.currentPassword, body.newPassword);
+  }
+
+
+  // Subir avatar del usuario
+  @Post(':id/avatar')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: './assets/uploadusers',
+        filename: (req, file, cb) => {
+          const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+          cb(null, uniqueName);
+        },
+      }),
+    }),
+  )
+  async uploadAvatar(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    const filePath = `/assets/uploadusers/${file.filename}`;
+    return this.usersService.updateAvatar(id, filePath);
   }
 }

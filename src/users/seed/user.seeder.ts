@@ -5,7 +5,7 @@ import { Role } from 'src/roles/entities/role.entity';
 import { RoleType } from 'src/common/constants';
 
 /**
- * Seeder para insertar un usuario admin por defecto si no existe.
+ * Seeder para insertar usuarios por defecto (admin y usuario).
  */
 export const seedUser = async (dataSource: DataSource) => {
   const userRepo = dataSource.getRepository(User);
@@ -17,16 +17,18 @@ export const seedUser = async (dataSource: DataSource) => {
       email: 'minecratf633@gmail.com',
       password: '123123123',
       roleDescription: RoleType.ADMIN,
+      avatarUrl: 'https://res.cloudinary.com/demo/image/upload/v1730059489/default-admin.png',
     },
     {
       name: 'María',
       email: 'maria@example.com',
       password: '123123123',
       roleDescription: RoleType.USER,
+      avatarUrl: 'https://res.cloudinary.com/demo/image/upload/v1730059490/default-user.png',
     },
   ];
-  
-  for (const { name, email, password, roleDescription } of usersToSeed) {
+
+  for (const { name, email, password, roleDescription, avatarUrl } of usersToSeed) {
     const existing = await userRepo.findOneBy({ email });
     if (existing) {
       console.log(`🟡 Usuario con email ${email} ya existe, omitiendo...`);
@@ -51,6 +53,7 @@ export const seedUser = async (dataSource: DataSource) => {
       email,
       password: hashedPassword,
       role,
+      avatarUrl,
     });
 
     await userRepo.save(user);

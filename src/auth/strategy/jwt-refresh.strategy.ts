@@ -53,8 +53,6 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
    * @returns Objeto con datos del usuario autenticado.
    */
   async validate(payload: any) {
-    return {
-      userId: payload.sub,
-    };
+    return { id: payload.sub, email: payload.email, role: payload.role };
   }
 }

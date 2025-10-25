@@ -54,7 +54,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * const user = await jwtStrategy.validate(payload);
    */
   async validate(payload: any) {
-    // Extrae la información del usuario del JWT (por ejemplo, sub: userId, email, role)
-    return { userId: payload.sub };
+    // Estándarizar el nombre del campo a "id" en lugar de "userId"
+    return { id: payload.sub, role: payload.role, email: payload.email };
   }
 }

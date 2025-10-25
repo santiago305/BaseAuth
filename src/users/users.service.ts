@@ -148,8 +148,31 @@ export class UsersService {
 
     return successResponse('Usuario encontrado', user);
   }
-  async findOwnUser(id: string){
-    return await this.findOne(id);
+  async findOwnUser(id: string) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['role'],
+    });
+
+    if (!user) throw new UnauthorizedException('Usuario no encontrado');
+
+    // Eliminamos la contraseña por seguridad
+    delete (user as any).password;
+
+    return successResponse('Usuario encontrado', user);
+  }
+
+  async changePassword(id: string, currentPassword: string, newPassword: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) throw new UnauthorizedException('Usuario no encontrado');
+
+    const isMatch = await argon2.verify(user.password, currentPassword);
+    if (!isMatch) throw new UnauthorizedException('Contraseña actual incorrecta');
+
+    user.password = await argon2.hash(newPassword, { type: argon2.argon2id });
+    await this.userRepository.save(user);
+
+    return successResponse('Contraseña actualizada correctamente');
   }
 
   async create(dto: CreateUserDto, requesterRole: string) {
@@ -268,5 +291,19 @@ export class UsersService {
       .getOne();
   
     return user || null;
+  }
+  async updateAvatar(id: string, filePath: string) {
+    try {
+      const user = await this.userRepository.findOne({ where: { id } });
+      if (!user) throw new UnauthorizedException('Usuario no encontrado');
+
+      user.avatarUrl = filePath;
+      await this.userRepository.save(user);
+
+      return successResponse('Avatar actualizado correctamente', user);
+    } catch (error) {
+      console.error('[UserService][updateAvatar] Error al subir avatar:', error);
+      throw new UnauthorizedException('No se pudo actualizar el avatar');
+    }
   }
 }

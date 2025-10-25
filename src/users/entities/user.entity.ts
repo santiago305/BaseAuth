@@ -46,6 +46,10 @@ export class User {
   @Column({ default: false })
   deleted: boolean;
 
+  @Column({ name: 'avatar_url', type: 'varchar', length: 500, nullable: true })
+  avatarUrl?: string;
+
+
   /**
    * Rol asignado al usuario.
    */

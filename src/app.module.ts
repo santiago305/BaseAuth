@@ -10,6 +10,7 @@ import { AppConfigModule } from './config/config.module';
 import { CommonModule } from './common/common.module';
 import { DatabaseModule } from './database/database.module';
 import { PeliculasModule } from './peliculas/peliculas.module';
+import { NoticiasModule } from './noticias/noticias.module';
 
 
 @Module({
@@ -21,7 +22,8 @@ import { PeliculasModule } from './peliculas/peliculas.module';
     RolesModule, 
     UsersModule, 
     ClientsModule,
-    PeliculasModule
+    PeliculasModule,
+    NoticiasModule,
   ],
 })
 export class AppModule {

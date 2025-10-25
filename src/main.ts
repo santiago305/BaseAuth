@@ -7,9 +7,17 @@ import { enableCookieParser } from './common/middleware/enable-cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import compression from 'compression';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
+
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // ✅ Servir la carpeta de imágenes públicas
+  app.useStaticAssets(join(__dirname, '..', 'assets'), {
+    prefix: '/api/assets/', // ruta pública
+  });
 
   app.setGlobalPrefix('api');
   

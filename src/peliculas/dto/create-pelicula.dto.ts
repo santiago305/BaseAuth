@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsDateString, IsInt, Min, Max, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsDateString,
+  IsInt,
+  Min,
+  Max,
+  IsNumber,
+  IsArray,
+} from 'class-validator';
 
 export class CreatePeliculaDto {
   @IsString()
@@ -34,4 +43,10 @@ export class CreatePeliculaDto {
   @IsOptional()
   @IsString()
   trailer_url?: string;
+
+  /** ✅ NUEVO CAMPO */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  generos?: string[];
 }
