@@ -3,46 +3,40 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  Inject,
-  forwardRef,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UsersService } from 'src/users/users.service';
-import { RoleType, status } from '../constants';
+import { RoleType } from '../constants';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(
-    private readonly reflector: Reflector,
-    @Inject(forwardRef(() => UsersService)) // evita problemas de dependencia circular
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly reflector: Reflector) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
+    // 🔹 Roles permitidos en el decorador @Roles(...)
     const allowedRoles = this.reflector.getAllAndOverride<RoleType[]>('roles', [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    if (!allowedRoles) return true; 
+    // Si no hay roles específicos, deja pasar
+    if (!allowedRoles || allowedRoles.length === 0) return true;
 
+    // 🔹 Obtenemos el usuario autenticado desde JwtAuthGuard
     const request = context.switchToHttp().getRequest();
-    const { userId } = request.user;
+    const user = request.user;
 
-    
-    const result = await this.usersService.findOne(userId);
-    if (result.type === status.ERROR) {
-      throw new ForbiddenException('No se pudo validar el usuario');
+    console.log('🧩 RolesGuard -> usuario recibido:', user);
+
+    if (!user || !user.role) {
+      throw new ForbiddenException('Usuario no autenticado o sin rol');
     }
 
-    const userRole = result.data.rol;
-    if (!Object.values(RoleType).includes(userRole as RoleType)) {
-      throw new ForbiddenException('Rol no válido');
-    }
-    if (!allowedRoles.includes(userRole)) {
+    // 🔹 Si el rol del usuario no está dentro de los permitidos
+    if (!allowedRoles.includes(user.role)) {
       throw new ForbiddenException('Acceso denegado: rol insuficiente');
     }
 
+    // ✅ Todo bien → permitir acceso
     return true;
   }
 }

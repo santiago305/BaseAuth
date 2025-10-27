@@ -35,10 +35,12 @@ async function bootstrap() {
   // habilitamos el cors
   app.enableCors({
     origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin'],
+    exposedHeaders: ['Authorization'],
     credentials: true,
   });
+
 
   app.use(helmet());
   app.use(compression()); 

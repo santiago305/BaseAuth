@@ -22,8 +22,13 @@ export class NoticiasService {
     return noticia;
   }
 
-  create(dto: CreateNoticiaDto) {
-    const noticia = this.repo.create(dto);
+  // ✅ Ahora recibe el id del usuario autenticado
+  async create(dto: CreateNoticiaDto, userId?: string) {
+    const noticia = this.repo.create({
+      ...dto,
+      createdBy: userId ?? null, // si no hay usuario, lo deja en null
+    });
+
     return this.repo.save(noticia);
   }
 

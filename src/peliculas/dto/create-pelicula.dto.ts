@@ -44,7 +44,10 @@ export class CreatePeliculaDto {
   @IsString()
   trailer_url?: string;
 
-  /** ✅ NUEVO CAMPO */
+  @IsOptional()
+  @IsString()
+  url_pelicula?: string;
+
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

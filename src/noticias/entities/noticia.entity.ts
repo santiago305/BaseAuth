@@ -28,4 +28,8 @@ export class Noticia {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  // 🟢 Nuevo campo: quién la creó (opcional)
+  @Column({ type: 'uuid', nullable: true })
+  createdBy?: string;
 }

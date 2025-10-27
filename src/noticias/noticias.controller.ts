@@ -4,7 +4,7 @@ import { CreateNoticiaDto } from './dto/create-noticia.dto';
 import { UpdateNoticiaDto } from './dto/update-noticia.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
-import { Roles } from 'src/common/decorators';
+import { Roles, User } from 'src/common/decorators';
 import { RoleType } from 'src/common/constants';
 
 @Controller('noticias')
@@ -21,23 +21,24 @@ export class NoticiasController {
     return this.noticiasService.findOne(id);
   }
 
-  @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN, RoleType.MODERATOR)
-  create(@Body() dto: CreateNoticiaDto) {
-    return this.noticiasService.create(dto);
+  @Post()
+  create(@Body() dto: CreateNoticiaDto, @User() user: any) {
+    console.log('🟢 Usuario en controlador:', user);
+    return this.noticiasService.create(dto, user?.id);
   }
 
-  @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN, RoleType.MODERATOR)
+  @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateNoticiaDto) {
     return this.noticiasService.update(id, dto);
   }
 
-  @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN, RoleType.MODERATOR)
+  @Delete(':id')
   remove(@Param('id') id: string) {
     return this.noticiasService.remove(id);
   }

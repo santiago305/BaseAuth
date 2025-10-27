@@ -36,7 +36,9 @@ export class Pelicula {
   @Column({ nullable: true })
   trailer_url: string | null;
 
-  /** ✅ NUEVO CAMPO: permite varios géneros */
+  @Column({ type: 'text', nullable: true })
+  url_pelicula: string | null;
+
   @Column({ type: 'text', array: true, nullable: true })
   generos: string[] | null;
 

@@ -282,16 +282,29 @@ export class UsersService {
     return this.toggleDelete(id, false, 'El usuario ha sido restaurado','No se pudo restaurar al usuario')
   }
 
-  async findWithPasswordByEmail(email: string): Promise<{ id: string; password: string } | null> {
+  async findWithPasswordByEmail(email: string): Promise<{
+    id: string;
+    email: string;
+    password: string;
+    role: { description: string };
+  } | null> {
     const user = await this.userRepository
       .createQueryBuilder('user')
-      .select(['user.id', 'user.password'])
+      .leftJoinAndSelect('user.role', 'role')
+      .select([
+        'user.id',
+        'user.email',
+        'user.password',
+        'role.description',
+      ])
       .where('user.email = :email', { email })
       .andWhere('user.deleted = false')
       .getOne();
-  
+
     return user || null;
   }
+
+
   async updateAvatar(id: string, filePath: string) {
     try {
       const user = await this.userRepository.findOne({ where: { id } });

@@ -23,18 +23,16 @@ export class AuthController {
   @Post('register')
   async register(
     @Body() dto: CreateUserDto,
-    @Res({ passthrough: true }) res: Response
+    @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.register(dto);
-    if (isTypeResponse(result)) {
-      return result;
-    }
+    if (isTypeResponse(result)) return result;
 
     const { access_token, refresh_token } = result;
 
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
-      secure: false, // ✅ en producción usa true
+      secure: false, // ⚠️ pon en true en prod
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
     });
@@ -43,7 +41,7 @@ export class AuthController {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
-      maxAge: 1000 * 60 * 60, // 1 hora
+      maxAge: 60 * 60 * 1000, // 1 hora
     });
 
     return { access_token };
@@ -53,64 +51,57 @@ export class AuthController {
   async login(
     @Body() dto: LoginAuthDto,
     @Res({ passthrough: true }) res: Response,
-  ):Promise<{ access_token: string } | ErrorResponse> {
+  ): Promise<{ access_token: string } | ErrorResponse> {
     const result = await this.authService.login(dto);
-
     if (isTypeResponse(result)) return result;
-    
 
     const { access_token, refresh_token } = result;
 
-
-  
     res.cookie('refresh_token', refresh_token, {
-      httpOnly: true,      
-      secure: false,       
-      sameSite: 'lax',     
-      maxAge: 7 * 24 * 60 * 60 * 1000, 
-    });
-
-    // Configuración de la cookie para el access token
-    res.cookie('access_token', access_token, {
-      httpOnly: true,      
-      secure: false,       
+      httpOnly: true,
+      secure: false,
       sameSite: 'lax',
-      maxAge: 1000 * 60 * 60,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return { access_token } ;
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 1000,
+    });
+
+    return { access_token };
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('refresh_token'); // Elimina la cookie de refresh token
-    res.clearCookie('access_token');  // Elimina la cookie de access token
-    return successResponse("Sesión cerrada correctamente");
+    res.clearCookie('refresh_token');
+    res.clearCookie('access_token');
+    return successResponse('Sesión cerrada correctamente');
   }
 
-
+  // 🔁 REFRESH TOKEN
   @UseGuards(JwtRefreshAuthGuard)
   @Get('refresh')
-  async refresh(@UserDecorator() user: { userId: string }, 
-  @Res({ passthrough: true }) res: Response) {
+  async refresh(
+    @UserDecorator() user: any, // 👈 puede venir con userId o sub
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const result = await this.authService.refreshFromPayload(user);
-  
-    if (isTypeResponse(result)) {
-      return result;
-    }
-  
+
+    if (isTypeResponse(result)) return result;
+
     const { access_token } = result;
-  
 
     res.cookie('access_token', access_token, {
       httpOnly: true,
-      secure: false, 
+      secure: false,
       sameSite: 'lax',
-      maxAge: 1000 * 60 * 60, 
+      maxAge: 60 * 60 * 1000, // 1h
     });
-  
-    // Retorna el nuevo access token
+
     return { access_token };
   }
 
